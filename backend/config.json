@@ -1,0 +1,7 @@
+{
+  "diabetes": {"file":"data/diabetes.csv", "target":"Outcome"},
+  "heart":    {"file":"data/heart_disease_uci.csv", "target":"num"},
+  "stroke":   {"file":"data/healthcare-dataset-stroke-data.csv", "target":"stroke"},
+  "kidney":   {"file":"data/kidney_disease.csv", "target":"classification"},
+  "liver":    {"file":"data/Indian Liver Patient Dataset (ILPD).csv", "target":"is_patient"}
+}
