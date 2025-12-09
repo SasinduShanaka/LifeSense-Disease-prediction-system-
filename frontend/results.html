@@ -1,0 +1,421 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>LifeSense — Assessment Report</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+    
+    * {
+      font-family: 'Inter', sans-serif;
+    }
+    
+    h1, h2, h3 {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    
+    body {
+      background: #0f172a;
+      position: relative;
+    }
+    
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url('https://images.unsplash.com/photo-1579154204601-01588f351e67?w=1920&q=80');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      opacity: 0.55;
+      z-index: -1;
+    }
+    
+    body::after {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(30, 41, 59, 0.5) 50%, rgba(15, 23, 42, 0.6) 100%);
+      z-index: -1;
+    }
+    
+    .neo-card {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    }
+    
+    .neo-card-solid {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.9) 100%);
+      backdrop-filter: blur(30px) saturate(150%);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+    
+    .glow-text {
+      text-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+    }
+    
+    .grid-bg {
+      background-image: 
+        linear-gradient(rgba(102, 126, 234, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(102, 126, 234, 0.05) 1px, transparent 1px);
+      background-size: 50px 50px;
+    }
+    
+    .gradient-border {
+      position: relative;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 2px;
+      border-radius: 12px;
+    }
+    
+    .gradient-border-content {
+      background: rgba(15, 23, 42, 0.9);
+      border-radius: 10px;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    .float-animation {
+      animation: float 3s ease-in-out infinite;
+    }
+    
+    @media print {
+      body {
+        background: white;
+      }
+      .no-print {
+        display: none;
+      }
+      .print-content {
+        background: white !important;
+        color: black !important;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen grid-bg p-4">
+  
+  <div class="max-w-7xl mx-auto p-6">
+    
+    <!-- Header -->
+    <header class="text-center mb-6">
+      <div class="inline-flex items-center gap-3 mb-2">
+        <div class="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center float-animation shadow-lg shadow-blue-500/50">
+          <span class="text-3xl">🏥</span>
+        </div>
+        <h1 class="text-4xl md:text-5xl font-bold text-white glow-text">LifeSense</h1>
+      </div>
+      <p class="text-blue-300 text-sm font-medium">Advanced Medical Assessment Report</p>
+    </header>
+
+    <!-- Action Buttons -->
+    <div class="flex gap-4 mb-6 no-print max-w-2xl mx-auto">
+      <button onclick="downloadPDF()" class="flex-1 gradient-border">
+        <div class="gradient-border-content px-6 py-4 text-white font-semibold text-base flex items-center justify-center gap-2">
+          <span>📅</span>
+          <span>Download PDF Report</span>
+        </div>
+      </button>
+      <button onclick="window.location.href='assessment.html'" class="flex-1 neo-card rounded-xl px-6 py-4 text-white font-semibold text-base hover:bg-gray-700 transition">
+        <span>← New Assessment</span>
+      </button>
+    </div>
+
+    <!-- Report Content -->
+    <div id="reportContent" class="grid md:grid-cols-3 gap-6">
+      
+      <!-- Patient Information -->
+      <div class="neo-card-solid rounded-xl p-6">
+        <div class="flex items-center gap-3 mb-4 pb-3 border-b border-gray-700">
+          <div class="text-2xl">👤</div>
+          <h2 class="text-xl font-bold text-white">Patient Information</h2>
+        </div>
+        <div id="patientInfo" class="space-y-3 text-sm"></div>
+      </div>
+
+      <!-- Assessment Results -->
+      <div class="neo-card-solid rounded-xl p-6">
+        <div class="flex items-center gap-3 mb-4 pb-3 border-b border-gray-700">
+          <div class="text-2xl">📊</div>
+          <h2 class="text-xl font-bold text-white">Assessment Results</h2>
+        </div>
+        <div id="assessmentResults"></div>
+      </div>
+
+      <!-- Test Parameters -->
+      <div class="neo-card-solid rounded-xl p-6">
+        <div class="flex items-center gap-3 mb-4 pb-3 border-b border-gray-700">
+          <div class="text-2xl">🔬</div>
+          <h2 class="text-xl font-bold text-white">Test Parameters</h2>
+        </div>
+        <div id="testParameters" class="grid grid-cols-1 gap-3 text-sm"></div>
+      </div>
+
+      
+    </div>
+    
+    <!-- Report Footer -->
+    <div class="neo-card-solid rounded-xl p-5 text-center mt-6">
+      <p class="text-sm text-gray-400">
+        Generated on <span id="reportDate"></span>
+      </p>
+      <p class="text-sm text-gray-500 mt-2">
+        ⚠️ This report is for informational purposes only. Always consult healthcare professionals for medical advice.
+      </p>
+
+    </div>
+
+  </div>
+
+  <script>
+    // Load data from sessionStorage
+    const patientData = JSON.parse(sessionStorage.getItem('patientData') || '{}');
+    const predictionData = JSON.parse(sessionStorage.getItem('predictionData') || '{}');
+    
+    console.log('Patient Data:', patientData);
+    console.log('Prediction Data:', predictionData);
+
+    // Check if data exists
+    if (!patientData.fullName || !predictionData.disease) {
+      document.body.innerHTML = `
+        <div class="min-h-screen flex items-center justify-center p-4">
+          <div class="neo-card-solid rounded-xl p-8 text-center max-w-md">
+            <div class="text-5xl mb-4">⚠️</div>
+            <h2 class="text-xl font-bold text-white mb-2">No Report Data Found</h2>
+            <p class="text-gray-400 text-sm mb-6">Please complete the patient registration and assessment first.</p>
+            <button onclick="window.location.href='patient-details.html'" class="gradient-border w-full">
+              <div class="gradient-border-content px-6 py-3 text-white font-semibold">
+                Start New Assessment
+              </div>
+            </button>
+          </div>
+        </div>
+      `;
+    } else {
+      displayReport();
+    }
+
+    function displayReport() {
+      // Display patient information
+      const patientInfo = document.getElementById('patientInfo');
+      
+      patientInfo.innerHTML = `
+        <div class="mb-2">
+          <span class="text-gray-400">Name:</span>
+          <span class="text-white font-semibold block">${patientData.fullName || 'N/A'}</span>
+        </div>
+        <div class="mb-2">
+          <span class="text-gray-400">Age:</span>
+          <span class="text-white font-semibold block">${patientData.age || 'N/A'} years</span>
+        </div>
+        <div class="mb-2">
+          <span class="text-gray-400">Gender:</span>
+          <span class="text-white font-semibold block">${patientData.gender || 'N/A'}</span>
+        </div>
+        ${patientData.contactNumber ? `
+        <div class="mb-2">
+          <span class="text-gray-400">Contact:</span>
+          <span class="text-white font-semibold block">${patientData.contactNumber}</span>
+        </div>
+        ` : ''}
+        ${patientData.medicalHistory ? `
+        <div>
+          <span class="text-gray-400">Medical History:</span>
+          <span class="text-white font-semibold block">${patientData.medicalHistory}</span>
+        </div>
+        ` : ''}
+      `;
+
+      // Display assessment results
+      const isHighRisk = predictionData.prediction === 1;
+      const probPct = (predictionData.probability * 100).toFixed(1);
+      const gradientClass = isHighRisk ? "from-red-500 to-pink-500" : "from-green-500 to-emerald-500";
+      
+      const assessmentResults = document.getElementById('assessmentResults');
+      assessmentResults.innerHTML = `
+        <div class="text-center mb-3">
+          <div class="text-4xl mb-2">${isHighRisk ? '⚠️' : '✓'}</div>
+          <div class="text-xl font-bold text-white mb-1">${predictionData.riskLevel}</div>
+          <div class="text-gray-400 text-xs">${predictionData.disease.charAt(0).toUpperCase() + predictionData.disease.slice(1)}</div>
+        </div>
+        
+        <div class="gradient-border mb-3">
+          <div class="gradient-border-content p-3">
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-white font-semibold text-xs">Probability</span>
+              <span class="text-xl font-bold text-white">${probPct}%</span>
+            </div>
+            <div class="bg-gray-700 rounded-full h-2 overflow-hidden">
+              <div class="bg-gradient-to-r ${gradientClass} h-full rounded-full" style="width: ${probPct}%"></div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="p-3 ${isHighRisk ? 'bg-red-900' : 'bg-green-900'} bg-opacity-20 rounded-lg border ${isHighRisk ? 'border-red-700' : 'border-green-700'}">
+          <div class="text-xs ${isHighRisk ? 'text-red-300' : 'text-green-300'}">
+            <strong class="${isHighRisk ? 'text-red-200' : 'text-green-200'}">Recommendation:</strong>
+            ${isHighRisk 
+              ? 'Elevated risk detected. Consult a healthcare professional.' 
+              : 'Lower risk. Continue healthy lifestyle with regular check-ups.'}
+          </div>
+        </div>
+      `;
+
+      // Display test parameters
+      const testParameters = document.getElementById('testParameters');
+      let paramsHTML = '';
+      for (const [key, value] of Object.entries(predictionData.testData)) {
+        const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        paramsHTML += `
+          <div class="p-2 bg-gray-700 bg-opacity-30 rounded-lg">
+            <div class="text-gray-400 text-xs mb-0.5">${displayKey}</div>
+            <div class="text-white font-semibold text-xs">${value !== null && value !== undefined && value !== '' ? value : 'N/A'}</div>
+          </div>
+        `;
+      }
+      testParameters.innerHTML = paramsHTML;
+
+      // Display report date
+      const reportDate = new Date(predictionData.timestamp);
+      document.getElementById('reportDate').textContent = reportDate.toLocaleString();
+    }
+
+    async function downloadPDF() {
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      
+      // Add header
+      pdf.setFontSize(24);
+      pdf.setTextColor(102, 126, 234);
+      pdf.text('LifeSense', 105, 20, { align: 'center' });
+      
+      pdf.setFontSize(12);
+      pdf.setTextColor(100, 100, 100);
+      pdf.text('Medical Assessment Report', 105, 28, { align: 'center' });
+      
+      // Add line
+      pdf.setDrawColor(102, 126, 234);
+      pdf.setLineWidth(0.5);
+      pdf.line(20, 32, 190, 32);
+      
+      let yPos = 45;
+      
+      // Patient Information
+      pdf.setFontSize(14);
+      pdf.setTextColor(0, 0, 0);
+      pdf.setFont(undefined, 'bold');
+      pdf.text('Patient Information', 20, yPos);
+      yPos += 8;
+      
+      pdf.setFontSize(10);
+      pdf.setFont(undefined, 'normal');
+      pdf.text(`Name: ${patientData.fullName || 'N/A'}`, 20, yPos);
+      yPos += 6;
+      pdf.text(`Age: ${patientData.age || 'N/A'} years`, 20, yPos);
+      yPos += 6;
+      
+      pdf.text(`Gender: ${patientData.gender || 'N/A'}`, 20, yPos);
+      yPos += 6;
+      
+      if (patientData.contactNumber) {
+        pdf.text(`Contact: ${patientData.contactNumber}`, 20, yPos);
+        yPos += 6;
+      }
+      
+      if (patientData.medicalHistory) {
+        pdf.text(`Medical History: ${patientData.medicalHistory}`, 20, yPos);
+        yPos += 6;
+      }
+      
+      yPos += 5;
+      
+      // Assessment Results
+      pdf.setFontSize(14);
+      pdf.setFont(undefined, 'bold');
+      pdf.text('Assessment Results', 20, yPos);
+      yPos += 8;
+      
+      const isHighRisk = predictionData.prediction === 1;
+      const probPct = (predictionData.probability * 100).toFixed(1);
+      
+      pdf.setFontSize(12);
+      if (isHighRisk) {
+        pdf.setTextColor(200, 50, 50);
+      } else {
+        pdf.setTextColor(50, 200, 50);
+      }
+      pdf.text(`Risk Level: ${predictionData.riskLevel}`, 20, yPos);
+      yPos += 7;
+      
+      pdf.setTextColor(0, 0, 0);
+      pdf.setFontSize(10);
+      pdf.text(`Disease: ${predictionData.disease.charAt(0).toUpperCase() + predictionData.disease.slice(1)}`, 20, yPos);
+      yPos += 6;
+      pdf.text(`Probability: ${probPct}%`, 20, yPos);
+      yPos += 10;
+      
+      // Recommendation
+      pdf.setFontSize(10);
+      pdf.setFont(undefined, 'bold');
+      pdf.text('Recommendation:', 20, yPos);
+      yPos += 6;
+      pdf.setFont(undefined, 'normal');
+      
+      const recommendation = isHighRisk 
+        ? 'This assessment indicates an elevated risk. We strongly recommend consulting with a healthcare professional for comprehensive evaluation and guidance.'
+        : 'This assessment indicates a lower risk level. Continue maintaining a healthy lifestyle with regular check-ups.';
+      
+      const splitRecommendation = pdf.splitTextToSize(recommendation, 170);
+      pdf.text(splitRecommendation, 20, yPos);
+      yPos += splitRecommendation.length * 5 + 10;
+      
+      // Test Parameters
+      pdf.setFontSize(14);
+      pdf.setFont(undefined, 'bold');
+      pdf.text('Test Parameters', 20, yPos);
+      yPos += 8;
+      
+      pdf.setFontSize(9);
+      pdf.setFont(undefined, 'normal');
+      
+      for (const [key, value] of Object.entries(predictionData.testData)) {
+        if (yPos > 270) {
+          pdf.addPage();
+          yPos = 20;
+        }
+        const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        pdf.text(`${displayKey}: ${value !== null && value !== undefined && value !== '' ? value : 'N/A'}`, 20, yPos);
+        yPos += 5;
+      }
+      
+      // Footer
+      pdf.setFontSize(8);
+      pdf.setTextColor(150, 150, 150);
+      const footerY = 285;
+      pdf.text(`Generated on: ${new Date(predictionData.timestamp).toLocaleString()}`, 105, footerY, { align: 'center' });
+      pdf.text('This report is for informational purposes only. Consult healthcare professionals for medical advice.', 105, footerY + 4, { align: 'center' });
+      
+      // Save PDF
+      const fileName = `LifeSense_Report_${patientData.lastName}_${new Date().getTime()}.pdf`;
+      pdf.save(fileName);
+    }
+  </script>
+
+</body>
+</html>
