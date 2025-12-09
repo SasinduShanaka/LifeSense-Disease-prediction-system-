@@ -1,0 +1,299 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>LifeSense — Patient Registration</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+    
+    * {
+      font-family: 'Inter', sans-serif;
+    }
+    
+    h1, h2, h3 {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    
+    body {
+      background: #0f172a;
+      position: relative;
+      overflow-x: hidden;
+    }
+    
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url('https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=1920&q=80');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      opacity: 0.55;
+      z-index: -1;
+    }
+    
+    body::after {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(30, 41, 59, 0.5) 50%, rgba(15, 23, 42, 0.6) 100%);
+      z-index: -1;
+    }
+    
+    .neo-card {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    }
+    
+    .neo-card-solid {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.9) 100%);
+      backdrop-filter: blur(30px) saturate(150%);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+    
+    .glow-text {
+      text-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+    }
+    
+    .grid-bg {
+      background-image: 
+        linear-gradient(rgba(102, 126, 234, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(102, 126, 234, 0.05) 1px, transparent 1px);
+      background-size: 50px 50px;
+    }
+    
+    .compact-input {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #fff;
+      transition: all 0.2s;
+    }
+    
+    .compact-input option {
+      background: #1e293b;
+      color: #fff;
+      padding: 10px;
+    }
+    
+    .compact-input:-webkit-autofill,
+    .compact-input:-webkit-autofill:hover,
+    .compact-input:-webkit-autofill:focus {
+      -webkit-text-fill-color: #fff;
+      -webkit-box-shadow: 0 0 0 1000px rgba(30, 41, 59, 0.9) inset;
+      box-shadow: 0 0 0 1000px rgba(30, 41, 59, 0.9) inset;
+      transition: background-color 5000s ease-in-out 0s;
+    }
+    
+    .compact-input::placeholder {
+      color: rgba(255, 255, 255, 0.4);
+    }
+    
+    .compact-input:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(102, 126, 234, 0.3);
+    }
+    
+    .compact-input:focus {
+      outline: none;
+      border-color: #667eea !important;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+      background: rgba(255, 255, 255, 0.08);
+    }
+    
+    .gradient-border {
+      position: relative;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 2px;
+      border-radius: 12px;
+    }
+    
+    .gradient-border-content {
+      background: rgba(15, 23, 42, 0.9);
+      border-radius: 10px;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    .float-animation {
+      animation: float 3s ease-in-out infinite;
+    }
+    
+    .btn-gradient {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .btn-gradient::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .btn-gradient:hover::before {
+      opacity: 1;
+    }
+    
+    .btn-gradient:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 20px 40px rgba(102, 126, 234, 0.4);
+    }
+    
+    .icon-box {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.1) 100%);
+      backdrop-filter: blur(10px);
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .fade-in-up {
+      animation: fadeInUp 0.6s ease-out;
+    }
+    
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.05);
+      }
+    }
+    
+    .pulse-animation {
+      animation: pulse 2s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body class="min-h-screen grid-bg flex items-center justify-center p-4">
+  
+  <div class="max-w-2xl w-full">
+    
+    <!-- Header -->
+    <header class="text-center mb-6">
+      <div class="inline-flex items-center gap-3 mb-2">
+        <div class="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center float-animation shadow-lg shadow-blue-500/50">
+          <span class="text-3xl">🏥</span>
+        </div>
+        <h1 class="text-4xl md:text-5xl font-bold text-white glow-text">LifeSense</h1>
+      </div>
+      <p class="text-blue-300 text-sm font-medium">Advanced Medical Assessment System</p>
+    </header>
+
+    <!-- Registration Form -->
+    <div class="neo-card-solid rounded-xl p-5 md:p-6">
+      
+      <div class="flex items-center gap-3 mb-5 pb-3 border-b border-gray-700">
+        <div class="text-2xl">👤</div>
+        <div>
+          <h2 class="text-xl font-bold text-white">Patient Information</h2>
+          <p class="text-xs text-gray-400">Please provide your details to continue</p>
+        </div>
+      </div>
+
+      <form id="patientForm" class="space-y-3">
+        
+        <!-- Essential Patient Information -->
+        <div class="grid md:grid-cols-2 gap-3">
+          <div>
+            <label class="block">
+              <span class="text-gray-300 text-xs font-medium mb-1.5 block">Full Name *</span>
+              <input type="text" name="fullName" required 
+                     placeholder="John Doe" 
+                     class="compact-input w-full rounded-lg p-2.5 text-sm" />
+            </label>
+          </div>
+          
+          <div>
+            <label class="block">
+              <span class="text-gray-300 text-xs font-medium mb-1.5 block">Age *</span>
+              <input type="number" name="age" required min="1" max="120"
+                     placeholder="25" 
+                     class="compact-input w-full rounded-lg p-2.5 text-sm" />
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <label class="block">
+            <span class="text-gray-300 text-xs font-medium mb-1.5 block">Gender *</span>
+            <select name="gender" required class="compact-input w-full rounded-lg p-2.5 text-sm">
+              <option value="" disabled selected>Select gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </label>
+        </div>
+
+        <div>
+          <label class="block">
+            <span class="text-gray-300 text-xs font-medium mb-1.5 block">Contact Number</span>
+            <input type="tel" name="contactNumber" 
+                   placeholder="+1 234 567 8900" 
+                   class="compact-input w-full rounded-lg p-2.5 text-sm" />
+          </label>
+        </div>
+
+        <div>
+          <label class="block">
+            <span class="text-gray-300 text-xs font-medium mb-1.5 block">Medical History (Optional)</span>
+            <textarea name="medicalHistory" rows="3"
+                      placeholder="Brief medical history or existing conditions..." 
+                      class="compact-input w-full rounded-lg p-2.5 text-sm resize-none"></textarea>
+          </label>
+        </div>
+
+        <button type="submit" class="btn-gradient w-full py-3 px-4 rounded-lg font-semibold text-white text-sm hover:shadow-lg transition-all duration-300 hover:shadow-purple-500/50 relative overflow-hidden">
+          <span class="relative z-10">Continue to Assessment →</span>
+        </button>
+      </form>
+    </div>
+    
+  </div>
+
+  <script>
+    document.getElementById('patientForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(this);
+      const patientData = {
+        fullName: formData.get('fullName'),
+        age: formData.get('age'),
+        gender: formData.get('gender'),
+        contactNumber: formData.get('contactNumber'),
+        medicalHistory: formData.get('medicalHistory') || 'None'
+      };
+      
+      sessionStorage.setItem('patientData', JSON.stringify(patientData));
+      window.location.href = 'assessment.html';
+    });
+  </script>
+</body>
+</html>
