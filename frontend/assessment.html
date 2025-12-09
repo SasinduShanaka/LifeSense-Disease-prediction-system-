@@ -1,0 +1,616 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>LifeSense — AI Disease Prediction</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+    
+    * {
+      font-family: 'Inter', sans-serif;
+    }
+    
+    h1, h2, h3 {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    
+    body {
+      background: #0f172a;
+      position: relative;
+      overflow-x: hidden;
+    }
+    
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url('https://images.unsplash.com/photo-1631815588090-d4bfec5b1ccb?w=1920&q=80');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      opacity: 0.5;
+      z-index: -1;
+    }
+    
+    body::after {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.65) 0%, rgba(30, 41, 59, 0.55) 50%, rgba(15, 23, 42, 0.65) 100%);
+      z-index: -1;
+    }
+    
+    .neo-card {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    }
+    
+    .neo-card-solid {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.9) 100%);
+      backdrop-filter: blur(30px) saturate(150%);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+    
+    .glow-text {
+      text-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+    }
+    
+    .disease-btn {
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      border: 1px solid rgba(59, 130, 246, 0.2) !important;
+    }
+    
+    .disease-btn:hover {
+      transform: translateX(4px);
+      border-color: rgba(59, 130, 246, 0.5) !important;
+      box-shadow: 0 10px 30px rgba(59, 130, 246, 0.2);
+    }
+    
+    .disease-btn:hover {
+      transform: translateX(4px);
+      border-color: rgba(59, 130, 246, 0.5) !important;
+      box-shadow: 0 10px 30px rgba(59, 130, 246, 0.2);
+    }
+    
+    .disease-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+      transition: left 0.5s;
+    }
+    
+    .disease-btn:hover::before {
+      left: 100%;
+    }
+    
+    .disease-btn:hover {
+      transform: translateY(-2px);
+      border-color: rgba(102, 126, 234, 0.5);
+    }
+    
+    input:focus, select:focus {
+      outline: none;
+      border-color: #667eea !important;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+    }
+    
+    .gradient-border {
+      position: relative;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 2px;
+      border-radius: 12px;
+    }
+    
+    .gradient-border-content {
+      background: rgba(15, 23, 42, 0.9);
+      border-radius: 10px;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    .float-animation {
+      animation: float 3s ease-in-out infinite;
+    }
+    
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 20px rgba(102, 126, 234, 0.3); }
+      50% { box-shadow: 0 0 40px rgba(102, 126, 234, 0.6); }
+    }
+    
+    .pulse-glow {
+      animation: pulse-glow 2s ease-in-out infinite;
+    }
+
+    .grid-bg {
+      background-image: 
+        linear-gradient(rgba(102, 126, 234, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(102, 126, 234, 0.05) 1px, transparent 1px);
+      background-size: 50px 50px;
+    }
+    
+    .compact-input {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #fff;
+      transition: all 0.2s;
+    }
+    
+    .compact-input option {
+      background: #1e293b;
+      color: #fff;
+      padding: 10px;
+    }
+    
+    /* Override browser autofill styles */
+    .compact-input:-webkit-autofill,
+    .compact-input:-webkit-autofill:hover,
+    .compact-input:-webkit-autofill:focus {
+      -webkit-text-fill-color: #fff;
+      -webkit-box-shadow: 0 0 0 1000px rgba(30, 41, 59, 0.9) inset;
+      box-shadow: 0 0 0 1000px rgba(30, 41, 59, 0.9) inset;
+      transition: background-color 5000s ease-in-out 0s;
+    }
+    
+    .compact-input::placeholder {
+      color: rgba(255, 255, 255, 0.4);
+    }
+    
+    .compact-input:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(102, 126, 234, 0.3);
+    }
+    
+    .compact-input:focus {
+      outline: none;
+      border-color: #667eea !important;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+      background: rgba(255, 255, 255, 0.08);
+    }
+  </style>
+</head>
+<body class="min-h-screen grid-bg">
+  <!-- Main Container -->
+  <div class="max-w-7xl mx-auto p-4 md:p-6">
+    
+    <!-- Header -->
+    <header class="text-center mb-6">
+      <div class="inline-flex items-center gap-3 mb-2">
+        <div class="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center float-animation shadow-lg shadow-blue-500/50">
+          <span class="text-3xl">🏥</span>
+        </div>
+        <h1 class="text-4xl md:text-5xl font-bold text-white glow-text">LifeSense</h1>
+      </div>
+      <p class="text-blue-300 text-sm font-medium">Advanced Medical Assessment System</p>
+    </header>
+
+    <!-- Main Grid Layout -->
+    <div class="grid lg:grid-cols-3 gap-6">
+      
+      <!-- Left Sidebar - Fixed Position -->
+      <div class="lg:col-span-1 space-y-6 lg:sticky lg:top-4 lg:self-start lg:max-h-[calc(100vh-2rem)] lg:overflow-hidden">
+        
+        <!-- Patient Info Display -->
+        <div class="neo-card rounded-xl p-4">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="text-xl">👤</span>
+            <h3 class="text-white font-semibold text-sm">Patient Information</h3>
+          </div>
+          <div id="patientInfoDisplay" class="space-y-2 text-sm text-gray-300"></div>
+        </div>
+
+        <!-- Disease Categories Menu -->
+        <div class="neo-card rounded-xl p-4">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="text-xl">🔬</span>
+            <h3 class="text-white font-semibold text-sm">Disease Categories</h3>
+          </div>
+          <div id="menu" class="space-y-2"></div>
+        </div>
+        
+      </div>
+
+      <!-- Main Content Area -->
+      <div class="lg:col-span-2 space-y-6">
+        <div id="formArea"></div>
+        <div id="result"></div>
+      </div>
+      
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-6 text-center">
+      <div class="neo-card rounded-lg p-3 inline-block">
+        <div class="flex items-center gap-2 text-sm text-gray-400">
+          <span>⚕️</span>
+          <span>API: <span id="apiInfo" class="text-purple-400 font-mono"></span></span>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+<script>
+/* ====== CONFIG ======
+   Change API_BASE to your backend address if needed.
+   If you run backend locally with default settings, use:
+     http://127.0.0.1:8000/api
+   If you access from another device on LAN, use the shown LAN IP (e.g. http://192.168.x.x:8000/api)
+*/
+const API_BASE = "http://127.0.0.1:8000/api"; // <-- change this if your backend is on another host
+
+document.getElementById('apiInfo').innerText = API_BASE;
+
+/* ====== Load Patient Data from SessionStorage ====== */
+let selectedGender = null;
+let patientData = {};
+
+try {
+  patientData = JSON.parse(sessionStorage.getItem('patientData') || '{}');
+  selectedGender = patientData.gender || null;
+  
+  // Display patient info
+  const patientInfoDisplay = document.getElementById('patientInfoDisplay');
+  if (patientData.fullName) {
+    patientInfoDisplay.innerHTML = `
+      <div><span class="text-gray-400">Name:</span> <span class="text-white font-medium">${patientData.fullName}</span></div>
+      <div><span class="text-gray-400">Age:</span> <span class="text-white font-medium">${patientData.age} years</span></div>
+      <div><span class="text-gray-400">Gender:</span> <span class="text-white font-medium">${selectedGender === 'Male' ? '👨' : '👩'} ${selectedGender}</span></div>
+    `;
+  } else {
+    patientInfoDisplay.innerHTML = `<div class="text-gray-500 text-xs">No patient data found</div>`;
+  }
+} catch (e) {
+  console.error('Failed to load patient data:', e);
+}
+
+/* ====== Remove old gender selection function ====== */
+
+/* ====== helpers ====== */
+function isProbablyNumberField(name) {
+  // heuristic: names that contain these substrings likely numeric
+  const numHints = ["age","glucose","blood","pressure","bp","bp","bmi","insulin","thalch","chol","oldpeak","preg","pregnanc","pcv","hemoglobin","hemo","sodium","potassium","sod","pot","bgr"];
+  const n = name.toLowerCase();
+  return numHints.some(h => n.includes(h));
+}
+
+function toPrimitiveValue(strVal) {
+  // Try convert to number, boolean, else keep string
+  if (strVal === null || strVal === undefined || strVal === "") return null;
+  const s = String(strVal).trim();
+  // booleans
+  if (["true","yes","y"].includes(s.toLowerCase())) return true;
+  if (["false","no","n"].includes(s.toLowerCase())) return false;
+  // numbers
+  if (!isNaN(s) && s !== "") {
+    const n = Number(s);
+    return n;
+  }
+  return s;
+}
+
+/* ====== load disease list + fields ====== */
+window.diseaseFieldsCache = {};
+
+async function init() {
+  const menu = document.getElementById("menu");
+  const res = await fetch(API_BASE + "/diseases");
+  if (!res.ok) {
+    document.getElementById("formArea").innerHTML = `<div class="p-4 bg-red-100 text-red-800 rounded">Failed to load diseases from API (${res.status}). Check backend is running and API_BASE is correct.</div>`;
+    return;
+  }
+  const data = await res.json();
+  const diseases = Object.keys(data);
+  
+  // Cache disease fields
+  diseases.forEach(d => {
+    window.diseaseFieldsCache[d] = data[d].fields || [];
+  });
+  
+  // menu buttons with compact futuristic design
+  diseases.forEach(d => {
+    const btn = document.createElement("button");
+    btn.className = "disease-btn neo-card p-3 rounded-lg text-left w-full";
+    
+    const diseaseInfo = {
+      'diabetes': { icon: '🩺', color: '#3b82f6' },
+      'heart': { icon: '❤️', color: '#ef4444' },
+      'stroke': { icon: '🧠', color: '#8b5cf6' },
+      'kidney': { icon: '🫁', color: '#14b8a6' },
+      'liver': { icon: '🏥', color: '#f59e0b' }
+    };
+    
+    const info = diseaseInfo[d] || { icon: '🔬', color: '#6b7280' };
+    
+    btn.innerHTML = `
+      <div class="flex items-center gap-3">
+        <div class="text-2xl">${info.icon}</div>
+        <div class="flex-1">
+          <div class="text-white font-semibold text-sm">${d.charAt(0).toUpperCase() + d.slice(1)}</div>
+        </div>
+        <div class="text-gray-500 text-xs">→</div>
+      </div>
+    `;
+    btn.onclick = () => buildForm(d, data[d].fields || []);
+    menu.appendChild(btn);
+  });
+
+  // Auto-open first disease for convenience
+  if (diseases.length) buildForm(diseases[0], data[diseases[0]].fields || []);
+}
+
+/* ====== build dynamic form ====== */
+function buildForm(disease, fields) {
+  const area = document.getElementById("formArea");
+  area.innerHTML = "";
+
+  const card = document.createElement("div");
+  card.className = "neo-card-solid rounded-xl p-5";
+
+  const diseaseInfo = {
+    'diabetes': { icon: '🩺', color: '#3b82f6' },
+    'heart': { icon: '❤️', color: '#ef4444' },
+    'stroke': { icon: '🧠', color: '#8b5cf6' },
+    'kidney': { icon: '🫁', color: '#14b8a6' },
+    'liver': { icon: '🏥', color: '#f59e0b' }
+  };
+  
+  const info = diseaseInfo[disease] || { icon: '🔬', color: '#6b7280' };
+
+  const header = document.createElement("div");
+  header.className = "flex items-center justify-between mb-4 pb-4 border-b border-gray-700";
+  header.innerHTML = `
+    <div class="flex items-center gap-3">
+      <div class="text-3xl">${info.icon}</div>
+      <div>
+        <h2 class="text-xl font-bold text-white">${disease.charAt(0).toUpperCase() + disease.slice(1)} Assessment</h2>
+        <p class="text-xs text-gray-400">Fill required fields</p>
+      </div>
+    </div>
+    ${selectedGender ? `<span class="text-xs px-3 py-1 rounded-full bg-gray-700 text-gray-300">${selectedGender === 'Male' ? '👨' : '👩'} ${selectedGender}</span>` : ''}
+  `;
+  card.appendChild(header);
+
+  const form = document.createElement("form");
+  form.id = "predictForm";
+
+  if (!fields || fields.length === 0) {
+    form.innerHTML = `<div class="text-sm text-yellow-400 p-3 bg-yellow-900 bg-opacity-20 rounded-lg border border-yellow-700">⚠️ No field data available</div>`;
+  } else {
+    const filteredFields = fields.filter(f => {
+      const fieldLower = f.toLowerCase();
+      if ((fieldLower === 'gender' || fieldLower === 'sex') && selectedGender) return false;
+      if (selectedGender === 'Male' && (fieldLower.includes('pregnan') || fieldLower === 'pregnancies')) return false;
+      return true;
+    });
+
+    // Create grid for compact form layout
+    const grid = document.createElement("div");
+    grid.className = "grid md:grid-cols-2 gap-3 mb-4";
+
+    filteredFields.forEach(f => {
+      const field = document.createElement("div");
+      const pretty = f.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+      const isNum = isProbablyNumberField(f);
+      
+      field.innerHTML = `
+        <label class="block">
+          <span class="text-gray-300 text-xs font-medium mb-1 block">${pretty}</span>
+          <input name="${f}" ${isNum ? 'inputmode="numeric"' : ''} 
+                 placeholder="${isNum ? '0' : 'Enter value'}" 
+                 class="compact-input w-full rounded-lg p-2 text-sm" />
+        </label>
+      `;
+      grid.appendChild(field);
+    });
+
+    form.appendChild(grid);
+
+    if (selectedGender === 'Female' && fields.some(f => f.toLowerCase().includes('pregnan'))) {
+      const note = document.createElement("div");
+      note.className = "text-xs text-blue-300 p-2 bg-blue-900 bg-opacity-20 rounded-lg border border-blue-700 mb-4";
+      note.innerHTML = `💡 Enter <strong>0</strong> for pregnancies if never pregnant`;
+      form.appendChild(note);
+    }
+  }
+
+  const actions = document.createElement("div");
+  actions.className = "flex gap-2 pt-4 border-t border-gray-700";
+  
+  const submit = document.createElement("button");
+  submit.type = "submit";
+  submit.className = "flex-1 gradient-border";
+  submit.innerHTML = `
+    <div class="gradient-border-content px-4 py-2.5 text-white font-semibold text-sm flex items-center justify-center gap-2">
+      <span>🔍</span>
+      <span>Analyze</span>
+    </div>
+  `;
+
+  const clear = document.createElement("button");
+  clear.type = "button";
+  clear.className = "px-4 py-2.5 bg-gray-700 hover:bg-gray-600 rounded-lg text-white text-sm transition-all";
+  clear.innerHTML = `↺`;
+  clear.onclick = () => { 
+    form.reset(); 
+    document.getElementById("result").innerHTML = ""; 
+  };
+
+  actions.appendChild(submit);
+  actions.appendChild(clear);
+  form.appendChild(actions);
+
+  // on submit
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!selectedGender) {
+      document.getElementById("result").innerHTML = `
+        <div class="neo-card-solid rounded-xl p-4 border-l-4 border-red-500">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">⚠️</span>
+            <div>
+              <div class="font-bold text-red-400 text-sm">Patient Data Missing</div>
+              <div class="text-xs text-gray-400 mt-1">Please complete patient registration first</div>
+            </div>
+          </div>
+        </div>
+      `;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    
+    document.getElementById("result").innerHTML = `
+      <div class="neo-card-solid rounded-xl p-4 flex items-center gap-3">
+        <div class="animate-spin text-2xl">⚕️</div>
+        <div>
+          <div class="font-semibold text-white text-sm">Analyzing...</div>
+          <div class="text-xs text-gray-400">Processing health data</div>
+        </div>
+      </div>
+    `;
+    
+    const fd = new FormData(form);
+    const payload = {};
+    for (const [k,v] of fd.entries()) {
+      payload[k] = toPrimitiveValue(v);
+    }
+
+    const genderFieldName = fields.find(f => f.toLowerCase() === 'gender' || f.toLowerCase() === 'sex');
+    if (genderFieldName) {
+      payload[genderFieldName] = selectedGender;
+    }
+
+    if (selectedGender === 'Male') {
+      const pregKey = fields.find(k => k.toLowerCase().includes('pregnan'));
+      if (pregKey) {
+        payload[pregKey] = 0;
+      }
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/predict/${disease}`, {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify(payload)
+      });
+      const j = await res.json();
+      if (!res.ok) {
+        document.getElementById("result").innerHTML = `
+          <div class="neo-card-solid rounded-xl p-4 border-l-4 border-red-500">
+            <div class="flex items-center gap-3">
+              <span class="text-2xl">❌</span>
+              <div>
+                <div class="font-bold text-red-400 text-sm">Error</div>
+                <div class="text-xs text-gray-400">${j.error || res.statusText}</div>
+              </div>
+            </div>
+          </div>
+        `;
+        return;
+      }
+      
+      const probPct = (j.probability * 100).toFixed(1);
+      const isHighRisk = j.prediction === 1;
+      const riskIcon = isHighRisk ? "⚠️" : "✓";
+      const borderColor = isHighRisk ? "border-red-500" : "border-green-500";
+      const gradientClass = isHighRisk ? "from-red-500 to-pink-500" : "from-green-500 to-emerald-500";
+      
+      // Store prediction results
+      const predictionData = {
+        disease: j.disease,
+        prediction: j.prediction,
+        probability: j.probability,
+        riskLevel: isHighRisk ? 'High Risk' : 'Low Risk',
+        timestamp: new Date().toISOString(),
+        testData: payload
+      };
+      sessionStorage.setItem('predictionData', JSON.stringify(predictionData));
+      console.log('Stored prediction data:', predictionData);
+      
+      document.getElementById("result").innerHTML = `
+        <div class="neo-card-solid rounded-xl p-5 border-l-4 ${borderColor}">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3">
+              <div class="text-4xl">${riskIcon}</div>
+              <div>
+                <div class="text-2xl font-bold text-white">${isHighRisk ? 'High Risk' : 'Low Risk'}</div>
+                <div class="text-xs text-gray-400">${j.disease.charAt(0).toUpperCase() + j.disease.slice(1)} • ${selectedGender}</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="gradient-border mb-4">
+            <div class="gradient-border-content p-4">
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-white font-semibold text-sm">Risk Probability</span>
+                <span class="text-2xl font-bold text-white">${probPct}%</span>
+              </div>
+              <div class="bg-gray-700 rounded-full h-2 overflow-hidden">
+                <div class="bg-gradient-to-r ${gradientClass} h-full rounded-full transition-all duration-1000" style="width: ${probPct}%"></div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="p-3 bg-blue-900 bg-opacity-20 rounded-lg border border-blue-700 mb-4">
+            <div class="flex items-start gap-2 text-xs text-blue-300">
+              <span>ℹ️</span>
+              <div>
+                <strong class="text-blue-200">Medical Advice:</strong>
+                ${isHighRisk 
+                  ? 'Consult a healthcare professional for proper evaluation.' 
+                  : 'Maintain healthy lifestyle. This does not replace medical advice.'}
+              </div>
+            </div>
+          </div>
+          
+          <button onclick="window.location.href='results.html'" class="w-full gradient-border">
+            <div class="gradient-border-content px-4 py-3 text-white font-semibold text-sm flex items-center justify-center gap-2">
+              <span>📄</span>
+              <span>View Full Report & Download PDF</span>
+            </div>
+          </button>
+        </div>
+      `;
+    } catch (err) {
+      document.getElementById("result").innerHTML = `
+        <div class="neo-card-solid rounded-xl p-4 border-l-4 border-orange-500">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">⚡</span>
+            <div>
+              <div class="font-bold text-orange-400 text-sm">Connection Error</div>
+              <div class="text-xs text-gray-400">${err.message}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+  };
+
+  card.appendChild(form);
+  area.appendChild(card);
+}
+
+/* ====== init ====== */
+init();
+</script>
+</body>
+</html>
